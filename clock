@@ -1,0 +1,212 @@
+from tkinter import *
+from tkinter import messagebox
+from PIL import ImageTk
+import datetime
+from tkinter import ttk
+import time
+
+now = datetime.datetime.now()
+s = 1
+min = 0
+m = 0
+se = 1
+a = ""
+b = ""
+c = ""
+laps = []
+last = []
+click = 0
+
+
+def tick():
+    global min, s, a
+    if s < 10 and min < 10:
+        sek.config(text="0%s:0%s" % (min, s))
+    elif min < 10:
+        sek.config(text="0%s:%s" % (min, s))
+    elif s < 10:
+        sek.config(text="%s:0%s" % (min, s))
+    else:
+        sek.config(text="%s:%s" % (min, s))
+    time.sleep(1)
+    s += 1
+    if s == 60:
+        min += 1
+        s = 0
+    a = root.after(100, tick)
+
+
+def time_update():
+    now = datetime.datetime.now()
+    clock.config(text=now.strftime("%H:%M:%S"))
+    root.after(1000, time_update)
+
+
+def btn1():
+    clok.pack()
+
+
+def btn2():
+    laps_var = StringVar(value=laps)
+    listbox.config(listvariable=laps_var)
+    tick()
+    listbox.pack(fill=BOTH, side="bottom")
+    start.pack_forget()
+    reset.pack_forget()
+
+    stop.pack(padx=150, side="right")
+    lap.pack(padx=100, side="right")
+
+
+def st0p():
+    root.after_cancel(a)
+    stop.pack_forget()
+    lap.pack_forget()
+    listbox.pack_forget()
+    start.pack(padx=150, side="right")
+    reset.pack(padx=100, side="right")
+
+
+def resett():
+    global min, s, click
+    click = 0
+    min, s = 0, 0
+    sek.config(text="0%s:0%s" % (min, s))
+    laps.clear()
+
+
+def lapp():
+    global click, s, min
+    click += 1
+    time = sek.cget("text")
+    lap_text = "#%s  %s" % (click, time)
+    laps.append(lap_text)
+    laps_var = StringVar(value=laps)
+    listbox.config(listvariable=laps_var)
+    print(time)
+
+
+
+def timer_tick():
+    global imput_sec, imput_min, c
+    c = root.after(1000, timer_tick)
+    cek = imput_sec.get()
+    minutes = imput_min.get()
+    imput_sec.set(cek - 1)
+    if cek > 60:
+        imput_min.set(minutes + cek // 60)
+        imput_sec.set(cek - 60)
+
+    if cek == 0:
+        print("*")
+        imput_min.set(minutes - 1)
+        imput_sec.set(cek + 59)
+    elif minutes == 0 and cek == 1:
+        proverka()
+
+    print(minutes, cek)
+
+
+
+
+def proverka():
+     root.after_cancel(c)
+     messagebox.showinfo("", 'ВРЕМЯ ВЫШЛО!!!')
+
+
+def timer_f():
+    global cek, minute
+    cek = imput_sec.get()
+    minutes = imput_min.get()
+    root.after_cancel(c)
+    imput_sec.set(cek - cek)
+    imput_min.set(minutes - minutes)
+    b_finish.place_forget()
+    b_start.place(x=150, y=400)
+
+
+
+def timer_s():
+    b_start.place_forget()
+    b_finish.place(x=150, y=400)
+    timer_tick()
+
+
+
+
+
+
+
+
+
+
+
+
+
+root = Tk()
+
+root['bg'] = 'white'
+root.title("ЧАСЫ")
+root.iconphoto(False, PhotoImage(file='image.png'))
+root.geometry('675x650')
+root.resizable(width=False, height=False)
+notebook = ttk.Notebook()
+notebook.pack(expand=True, fill=BOTH)
+
+
+clok = ttk.Frame(notebook)
+clock = Label(clok, text=now.strftime("%H:%M:%S"), font="Arial")
+clock.config(font=("Courier", 65))
+clok.pack()
+clock.pack(side=TOP, pady=200)
+
+
+
+sec = ttk.Frame(notebook)
+sek = Label(sec, text="00:00", font="Arial", pady=150)
+sek.config(font=("Courier", 65))
+start = Button(sec, text=" START ", command=btn2, width=5, height=2)
+reset = Button(sec, text=" RESET ", command=resett, width=5, height=2)
+stop = Button(sec, text=" STOP ", command=st0p, width=5, height=2)
+lap = Button(sec, text="  LAP  ", command=lapp, width=5, height=2)
+list_lap = ttk.Frame(notebook)
+laps_var = StringVar(value=laps)
+listbox = Listbox(sec, listvariable=laps_var, width=13, height=7, font="Arial15")
+sek.pack()
+start.pack(padx=0, side="right")
+reset.pack(padx=0, side="left")
+sec.pack()
+
+
+
+
+timer = ttk.Frame(notebook)
+imput_sec = IntVar(value=0)
+imput_min = IntVar(value=0)
+ti_min = Entry(timer, font="Arial", width=2, textvariable=imput_min, justify="right")
+ti_min.config(font=("Courier", 65))
+dots = Label(timer, text=":", font=("Courier", 65))
+ti_sec = Entry(timer, font="Arial", textvariable=imput_sec, width=2, justify="right")
+ti_sec.config(font=("Courier", 65))
+b_start = Button(timer, text=" START ", command=timer_s, width=50, height=5)
+b_finish = Button(timer, text=" FINISH ", command=timer_f, width=50, height=5)
+ti_min.place(x=175, y=175)
+dots.place(x=300, y=175)
+ti_sec.place(x=375, y=175)
+b_start.place(x=150, y=400)
+
+
+
+notebook.add(clok, text="ЧАСЫ")
+notebook.add(sec, text="СЕКУНДОМЕР")
+notebook.add(timer, text="ТАЙМЕР")
+
+
+
+
+
+
+
+time_update()
+
+root.mainloop()
